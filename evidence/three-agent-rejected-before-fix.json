@@ -1,0 +1,617 @@
+{
+  "id": "a1d192c3-1600-4a41-bc78-b0686f885f63",
+  "created": "2026-10-22T04:24:05.361226+00:00",
+  "status": "completed",
+  "predictions": [
+    {
+      "cliente_id": "EVIDENCIA-001",
+      "probability": 0.03616650102251601,
+      "risk": "BAJO",
+      "factors": [
+        {
+          "feature": "dias_ultima_compra",
+          "value": 30.0,
+          "delta_probability": -0.5618694854888275
+        },
+        {
+          "feature": "pagos_atrasados",
+          "value": 1.0,
+          "delta_probability": -0.33721769085784414
+        },
+        {
+          "feature": "reclamos",
+          "value": 2.0,
+          "delta_probability": -0.24301513095732574
+        },
+        {
+          "feature": "compras_mensuales",
+          "value": 5.0,
+          "delta_probability": 0.028928342804948996
+        },
+        {
+          "feature": "antiguedad",
+          "value": 24.0,
+          "delta_probability": 0.013032367950781075
+        },
+        {
+          "feature": "monto_promedio",
+          "value": 800.0,
+          "delta_probability": -0.006174212843618257
+        }
+      ],
+      "warnings": [],
+      "observed": {
+        "antiguedad": 24.0,
+        "compras_mensuales": 5.0,
+        "monto_promedio": 800.0,
+        "reclamos": 2.0,
+        "dias_ultima_compra": 30.0,
+        "pagos_atrasados": 1.0
+      }
+    }
+  ],
+  "recommendations": [
+    {
+      "cliente_id": "EVIDENCIA-001",
+      "action": "monitor",
+      "evidence": [
+        "probability"
+      ],
+      "rationale": "Mantener seguimiento comercial. Evidencia: probability = 0.036167. Validar el contexto con una persona.",
+      "priority": "NORMAL",
+      "source": "llm",
+      "owner": "Analista comercial",
+      "timeframe": "Propuesta: próximo corte mensual",
+      "steps": [
+        "Revisar indicadores en el siguiente corte.",
+        "Comparar la frecuencia de compra con su historial."
+      ],
+      "success_check": "Nueva revisión registrada; no asumir retención lograda.",
+      "decision": "pending",
+      "supervisor_review": {
+        "index": 0,
+        "action": "approve_plan",
+        "evidence": [
+          "probability",
+          "antiguedad",
+          "compras_mensuales",
+          "pagos_atrasados"
+        ]
+      }
+    }
+  ],
+  "trace": [
+    {
+      "sequence": 1,
+      "timestamp": "2026-10-22T04:24:05.361354+00:00",
+      "sender": "usuario",
+      "recipient": "supervisor",
+      "tool": "analysis_request",
+      "status": "ok",
+      "payload": {
+        "customer_count": 1,
+        "requested_llm": true,
+        "demo": false
+      }
+    },
+    {
+      "sequence": 2,
+      "timestamp": "2026-10-22T04:24:05.361403+00:00",
+      "sender": "supervisor",
+      "recipient": "predictivo",
+      "tool": "delegate_prediction",
+      "status": "delegated",
+      "payload": {
+        "task": "validate, infer, explain"
+      }
+    },
+    {
+      "sequence": 3,
+      "timestamp": "2026-10-22T04:24:05.362544+00:00",
+      "sender": "predictivo",
+      "recipient": "supervisor",
+      "tool": "neural_inference_and_mean_ablation",
+      "status": "ok",
+      "payload": {
+        "model_sha256": "bf9b63beea3d7565ab920e6d8459ff3de627609a207c2b8bd3c58c84eca77ca8",
+        "outputs": [
+          {
+            "index": 0,
+            "probability": 0.03616650102251601,
+            "risk": "BAJO",
+            "factors": [
+              {
+                "feature": "dias_ultima_compra",
+                "value": 30.0,
+                "delta_probability": -0.5618694854888275
+              },
+              {
+                "feature": "pagos_atrasados",
+                "value": 1.0,
+                "delta_probability": -0.33721769085784414
+              },
+              {
+                "feature": "reclamos",
+                "value": 2.0,
+                "delta_probability": -0.24301513095732574
+              }
+            ],
+            "out_of_domain": false
+          }
+        ]
+      }
+    },
+    {
+      "sequence": 4,
+      "timestamp": "2026-10-22T04:24:05.370769+00:00",
+      "sender": "predictivo",
+      "recipient": "llm",
+      "tool": "predictivo_llm_request",
+      "status": "ok",
+      "payload": {
+        "input": [
+          {
+            "index": 0,
+            "probability": 0.03616650102251601,
+            "risk": "BAJO",
+            "observed": {
+              "antiguedad": 24.0,
+              "compras_mensuales": 5.0,
+              "monto_promedio": 800.0,
+              "reclamos": 2.0,
+              "dias_ultima_compra": 30.0,
+              "pagos_atrasados": 1.0
+            },
+            "allowed_actions": [
+              "interpret_risk"
+            ]
+          }
+        ],
+        "identifiers_removed": true
+      }
+    },
+    {
+      "sequence": 5,
+      "timestamp": "2026-10-22T04:24:06.202638+00:00",
+      "sender": "llm",
+      "recipient": "predictivo",
+      "tool": "predictivo_llm_result",
+      "status": "error",
+      "payload": {
+        "error": "UNSUPPORTED_RECOMMENDATION"
+      }
+    },
+    {
+      "sequence": 6,
+      "timestamp": "2026-10-22T04:24:06.202676+00:00",
+      "sender": "supervisor",
+      "recipient": "retencion",
+      "tool": "delegate_retention",
+      "status": "delegated",
+      "payload": {
+        "prediction_message": 3,
+        "task": "select grounded actions"
+      }
+    },
+    {
+      "sequence": 7,
+      "timestamp": "2026-10-22T04:24:06.202738+00:00",
+      "sender": "retencion",
+      "recipient": "llm",
+      "tool": "structured_selection_request",
+      "status": "ok",
+      "payload": {
+        "input": [
+          {
+            "index": 0,
+            "probability": 0.03616650102251601,
+            "risk": "BAJO",
+            "observed": {
+              "antiguedad": 24.0,
+              "compras_mensuales": 5.0,
+              "monto_promedio": 800.0,
+              "reclamos": 2.0,
+              "dias_ultima_compra": 30.0,
+              "pagos_atrasados": 1.0
+            },
+            "allowed_actions": [
+              "monitor"
+            ]
+          }
+        ],
+        "identifiers_removed": true
+      }
+    },
+    {
+      "sequence": 8,
+      "timestamp": "2026-10-22T04:24:06.675877+00:00",
+      "sender": "llm",
+      "recipient": "retencion",
+      "tool": "validated_json",
+      "status": "ok",
+      "payload": {
+        "choices": [
+          {
+            "index": 0,
+            "action": "monitor",
+            "evidence": [
+              "probability"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "sequence": 9,
+      "timestamp": "2026-10-22T04:24:06.675994+00:00",
+      "sender": "retencion",
+      "recipient": "supervisor",
+      "tool": "recommendations",
+      "status": "ok",
+      "payload": {
+        "source": "llm",
+        "outputs": [
+          {
+            "index": 0,
+            "action": "monitor",
+            "evidence": [
+              "probability"
+            ],
+            "priority": "NORMAL"
+          }
+        ],
+        "correction": false
+      }
+    },
+    {
+      "sequence": 10,
+      "timestamp": "2026-10-22T04:24:06.680252+00:00",
+      "sender": "supervisor",
+      "recipient": "llm",
+      "tool": "supervisor_llm_request",
+      "status": "ok",
+      "payload": {
+        "input": [
+          {
+            "index": 0,
+            "probability": 0.03616650102251601,
+            "risk": "BAJO",
+            "observed": {
+              "antiguedad": 24.0,
+              "compras_mensuales": 5.0,
+              "monto_promedio": 800.0,
+              "reclamos": 2.0,
+              "dias_ultima_compra": 30.0,
+              "pagos_atrasados": 1.0
+            },
+            "allowed_actions": [
+              "approve_plan",
+              "request_review"
+            ],
+            "proposal": {
+              "action": "monitor",
+              "evidence": [
+                "probability"
+              ],
+              "steps": [
+                "Revisar indicadores en el siguiente corte.",
+                "Comparar la frecuencia de compra con su historial."
+              ]
+            }
+          }
+        ],
+        "identifiers_removed": true
+      }
+    },
+    {
+      "sequence": 11,
+      "timestamp": "2026-10-22T04:24:07.340198+00:00",
+      "sender": "llm",
+      "recipient": "supervisor",
+      "tool": "supervisor_llm_result",
+      "status": "ok",
+      "payload": {
+        "choices": [
+          {
+            "index": 0,
+            "action": "approve_plan",
+            "evidence": [
+              "probability",
+              "antiguedad",
+              "compras_mensuales",
+              "pagos_atrasados"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "sequence": 12,
+      "timestamp": "2026-10-22T04:24:07.340245+00:00",
+      "sender": "supervisor",
+      "recipient": "usuario",
+      "tool": "validated_report",
+      "status": "ok",
+      "payload": {
+        "approved_for_human_review": true,
+        "external_actions_executed": 0
+      }
+    }
+  ],
+  "warnings": [
+    "predictivo: La respuesta del proveedor LLM no pudo validarse. Se conservan las recomendaciones basadas en reglas."
+  ],
+  "usage": [
+    {
+      "provider": "groq",
+      "model": "openai/gpt-oss-20b",
+      "input_tokens": 478,
+      "output_tokens": 286,
+      "total_tokens": 764,
+      "agent": "predictivo"
+    },
+    {
+      "provider": "groq",
+      "model": "openai/gpt-oss-20b",
+      "input_tokens": 524,
+      "output_tokens": 210,
+      "total_tokens": 734,
+      "agent": "retencion"
+    },
+    {
+      "provider": "groq",
+      "model": "openai/gpt-oss-20b",
+      "input_tokens": 540,
+      "output_tokens": 232,
+      "total_tokens": 772,
+      "agent": "supervisor"
+    }
+  ],
+  "llm_attempts": [
+    {
+      "agent": "predictivo",
+      "attempt": 1,
+      "status": "failed",
+      "code": "UNSUPPORTED_RECOMMENDATION",
+      "elapsed_ms": 831.85
+    },
+    {
+      "agent": "retencion",
+      "attempt": 1,
+      "status": "validated",
+      "elapsed_ms": 469.81
+    },
+    {
+      "agent": "supervisor",
+      "attempt": 1,
+      "status": "validated",
+      "elapsed_ms": 659.96
+    }
+  ],
+  "mode": "llm",
+  "agent_llm": {
+    "predictivo": {
+      "status": "failed",
+      "checked_indices": [],
+      "choices": [],
+      "reason": "La respuesta del proveedor LLM no pudo validarse. Se conservan las recomendaciones basadas en reglas."
+    },
+    "supervisor": {
+      "status": "validated",
+      "checked_indices": [
+        0
+      ],
+      "choices": [
+        {
+          "index": 0,
+          "action": "approve_plan",
+          "evidence": [
+            "probability",
+            "antiguedad",
+            "compras_mensuales",
+            "pagos_atrasados"
+          ]
+        }
+      ],
+      "usage": {
+        "provider": "groq",
+        "model": "openai/gpt-oss-20b",
+        "input_tokens": 540,
+        "output_tokens": 232,
+        "total_tokens": 772
+      }
+    },
+    "retencion": {
+      "status": "validated",
+      "checked_indices": [
+        0
+      ]
+    }
+  },
+  "llm_report": {
+    "requested": true,
+    "provider": "groq",
+    "model": "openai/gpt-oss-20b",
+    "api": "chat/completions",
+    "status": "validated",
+    "attempts": [
+      {
+        "agent": "predictivo",
+        "attempt": 1,
+        "status": "failed",
+        "code": "UNSUPPORTED_RECOMMENDATION",
+        "elapsed_ms": 831.85
+      },
+      {
+        "agent": "retencion",
+        "attempt": 1,
+        "status": "validated",
+        "elapsed_ms": 469.81
+      },
+      {
+        "agent": "supervisor",
+        "attempt": 1,
+        "status": "validated",
+        "elapsed_ms": 659.96
+      }
+    ],
+    "message": "El LLM respondió y su selección pasó los controles.",
+    "usage": [
+      {
+        "provider": "groq",
+        "model": "openai/gpt-oss-20b",
+        "input_tokens": 478,
+        "output_tokens": 286,
+        "total_tokens": 764,
+        "agent": "predictivo"
+      },
+      {
+        "provider": "groq",
+        "model": "openai/gpt-oss-20b",
+        "input_tokens": 524,
+        "output_tokens": 210,
+        "total_tokens": 734,
+        "agent": "retencion"
+      },
+      {
+        "provider": "groq",
+        "model": "openai/gpt-oss-20b",
+        "input_tokens": 540,
+        "output_tokens": 232,
+        "total_tokens": 772,
+        "agent": "supervisor"
+      }
+    ],
+    "identifiers_sent": false,
+    "selected_customers": 1
+  },
+  "analytics": {
+    "count": 1,
+    "mean_probability": 0.03616650102251601,
+    "median_probability": 0.03616650102251601,
+    "out_of_domain_count": 0,
+    "segments": [
+      {
+        "risk": "ALTO",
+        "count": 0,
+        "share": 0.0,
+        "mean_probability": null,
+        "means": {
+          "antiguedad": null,
+          "compras_mensuales": null,
+          "monto_promedio": null,
+          "reclamos": null,
+          "dias_ultima_compra": null,
+          "pagos_atrasados": null
+        }
+      },
+      {
+        "risk": "MEDIO",
+        "count": 0,
+        "share": 0.0,
+        "mean_probability": null,
+        "means": {
+          "antiguedad": null,
+          "compras_mensuales": null,
+          "monto_promedio": null,
+          "reclamos": null,
+          "dias_ultima_compra": null,
+          "pagos_atrasados": null
+        }
+      },
+      {
+        "risk": "BAJO",
+        "count": 1,
+        "share": 1.0,
+        "mean_probability": 0.03616650102251601,
+        "means": {
+          "antiguedad": 24.0,
+          "compras_mensuales": 5.0,
+          "monto_promedio": 800.0,
+          "reclamos": 2.0,
+          "dias_ultima_compra": 30.0,
+          "pagos_atrasados": 1.0
+        }
+      }
+    ],
+    "histogram": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "sensitivities": [
+      {
+        "feature": "dias_ultima_compra",
+        "mean_absolute_delta": 0.5618694854888275
+      },
+      {
+        "feature": "pagos_atrasados",
+        "mean_absolute_delta": 0.33721769085784414
+      },
+      {
+        "feature": "reclamos",
+        "mean_absolute_delta": 0.24301513095732574
+      },
+      {
+        "feature": "compras_mensuales",
+        "mean_absolute_delta": 0.028928342804948996
+      },
+      {
+        "feature": "antiguedad",
+        "mean_absolute_delta": 0.013032367950781075
+      },
+      {
+        "feature": "monto_promedio",
+        "mean_absolute_delta": 0.006174212843618257
+      }
+    ],
+    "priorities": [],
+    "priority_definition": "Probabilidad × compras mensuales × monto promedio. Índice orientativo en S/; no representa pérdida esperada ni ingresos verificados. Excluye datos fuera del dominio y riesgo bajo.",
+    "sensitivity_definition": "Media del cambio absoluto al sustituir cada variable por su media de entrenamiento. Solo clientes dentro del dominio; no es causalidad ni importancia global del modelo."
+  },
+  "agent_report": {
+    "predictive": {
+      "count": 1,
+      "out_of_domain": 0
+    },
+    "retention": {
+      "llm_count": 1,
+      "rules_count": 0,
+      "actions": {
+        "contact": 0,
+        "monitor": 1,
+        "reactivate": 0,
+        "claims": 0,
+        "payments": 0,
+        "review_data": 0
+      }
+    },
+    "supervisor": {
+      "validated": true,
+      "checks": [
+        "Correspondencia de clientes",
+        "Acciones compatibles con indicadores",
+        "Evidencia verificable",
+        "Plan de seguimiento y revisión humana"
+      ],
+      "corrections": 0
+    }
+  },
+  "elapsed_ms": 1979.26,
+  "model_sha256": "bf9b63beea3d7565ab920e6d8459ff3de627609a207c2b8bd3c58c84eca77ca8",
+  "demo": false,
+  "ephemeral": true,
+  "summary": {
+    "customers": 1,
+    "high": 0,
+    "medium": 0,
+    "low": 1
+  }
+}

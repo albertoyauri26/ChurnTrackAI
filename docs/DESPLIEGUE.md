@@ -43,7 +43,7 @@ No ejecutar marcadores `<...>` literalmente. Si ya hay un remoto, comprobarlo y 
 2. Elegir **New → Blueprint** y conectar el repositorio con `render.yaml`. Alternativa: **New → Web Service**, repositorio, runtime Docker, plan Free y health check `/health`.
 3. Comprobar el plan gratuito antes de confirmar. No añadir un disco ni un plan pagado sin decidir su costo.
 4. `APP_API_KEY` se genera por Blueprint; para configuración manual generar una clave larga aleatoria y guardarla en Environment. Compartirla con el docente por un canal privado, no en README ni en video.
-5. Configurar `GEMINI_API_KEY` en Environment para demostrar el LLM. `GEMINI_MODEL=gemini-3.1-flash-lite`; `LLM_DAILY_LIMIT=50`. La clave se introduce en el panel seguro.
+5. Configurar en Environment `LLM_PROVIDER=groq`, `GROQ_API_KEY` (panel seguro, nunca en el repositorio) y `GROQ_MODEL=openai/gpt-oss-20b`; `LLM_DAILY_LIMIT=50` y `PUBLIC_LLM_DAILY_LIMIT=10`. Alternativa: `LLM_PROVIDER=gemini` con `GEMINI_API_KEY` y `GEMINI_MODEL`.
 6. Por defecto, `DATABASE_URL=sqlite:////app/runtime/churn.db`. Solo sirve para una demo descartable. Para conservar historial, reemplazar por la conexión segura PostgreSQL de una base externa. Se aceptan prefijos `postgres://`, `postgresql://` y `postgresql+psycopg://`. Usar TLS según las instrucciones del proveedor.
 7. Desplegar. El contenedor usa el `PORT` de Render, escucha `0.0.0.0` y ejecuta un solo worker.
 8. Revisar logs de build y servidor. El runtime no requiere descargar o entrenar modelos al arrancar.
@@ -58,7 +58,7 @@ Guardar la URL literal que entregue Render. En una ventana independiente comprob
 - Dashboard y estilos cargan por HTTPS; no depende de localhost ni CDN.
 - Demo produce 12 predicciones, 4 clientes de riesgo alto y 6 mensajes en el modo de reglas con el artefacto actual.
 - Configuración admite la clave; un cliente y el CSV generan resultados y el historial los recupera.
-- Con Gemini activado y consentimiento, la traza muestra llamada, JSON validado y consumo real. Confirmar `mode=llm`; un fallback no satisface esta verificación.
+- Con Groq activado y consentimiento, la traza muestra llamada, JSON validado y consumo real. Confirmar `llm_report.status=validated`; un fallback no satisface esta verificación.
 - Aprobar una recomendación; recargar el informe y comprobar que persiste sin acción externa.
 - Exportar informe y CSV. Abrir el reporte de métricas y los factores.
 - Repetir desde otro equipo o red; capturar pantallas de la URL pública y medir latencia online, incluida primera carga después de suspensión.
@@ -71,9 +71,18 @@ Cambiar código, ejecutar pytest y equivalencia del modelo si se tocaron sus art
 
 ## LLM y presupuesto
 
-El modelo configurado es `gemini-3.1-flash-lite`. Las cuotas y tarifas dependen del proyecto de Google y del modelo; consultar [precios oficiales Gemini](https://ai.google.dev/gemini-api/docs/pricing). No se ha acreditado un costo real por consulta. El límite local es de 50 intentos diarios, se priorizan hasta 20 clientes por lote y la demo pública no invoca el proveedor.
+Proveedor en producción: Groq, modelo `openai/gpt-oss-20b`. El 24/10/2026 figura como modelo de producción con soporte de `strict: true` en [modelos Groq](https://console.groq.com/docs/models) y [salidas estructuradas](https://console.groq.com/docs/structured-outputs). Tarifa publicada: USD 0,075 por millón de tokens de entrada y USD 0,30 por millón de salida.
 
-La clave permitió consultar el catálogo de modelos, pero las pruebas de generación del 21/10/2026 devolvieron HTTP 503. No existe evidencia de una generación exitosa. La aplicación informa el fallo y continúa con la red neuronal y reglas explícitas. Los tokens reales se registran desde `usageMetadata` cuando está disponible; una llamada fallida puede consumir cuota sin informar tokens. Usar datos sintéticos en la demostración y revisar las condiciones del nivel contratado. No se garantiza disponibilidad continua ni un costo determinado.
+Costo estimado a partir de tokens medidos en ejecuciones públicas reales (`usage` de cada informe) multiplicados por la tarifa publicada. No es una factura: el nivel gratuito de Groq no cobra, pero limita tokens y solicitudes por minuto.
+
+| Consulta | Evidencia | Tokens entrada / salida | Costo por consulta | Costo por 100 consultas |
+|---|---|---|---|---|
+| 1 cliente, tres etapas | `evidence/three-agent-live.json` | 1.758 / 903 | USD 0,00040 | USD 0,040 |
+| 300 clientes (20 con LLM), tres etapas | `evidence/redesign-verification.json` | 5.457 / 1.723 | USD 0,00093 | USD 0,093 |
+
+Límites propios: 50 intentos de proveedor por día, 10 análisis públicos con LLM por día y como máximo 20 clientes por etapa. El 22/10/2026 un lote de 300 recibió HTTP 429 de Groq en Retención y Supervisor (`evidence/three-agent-batch-quota.json`). La aplicación lo informó, no reintentó y aplicó reglas. Render Free no tiene costo dentro de su cuota mensual.
+
+Gemini sigue implementado como alternativa, pero no tiene una generación exitosa acreditada: las pruebas del 21/10/2026 devolvieron HTTP 503 o tiempo de espera agotado.
 
 ## ZIP y alternativas
 
@@ -82,7 +91,7 @@ El archivo ZIP de entrega conserva fuentes y artefactos para subir a un reposito
 
 ## Acceso para el profesor
 
-El enlace público permite ejecutar 12 o 300 ejemplos sintéticos sin clave y sin consumir Gemini. Para analizar datos propios temporalmente no se necesita APP_API_KEY. Solo el guardado y consulta del historial privado requiere validarla mediante `/api/session`. GEMINI_API_KEY permanece exclusivamente en el servidor. No compartir claves del proveedor.
+El enlace público permite analizar un cliente o el CSV de ejemplo de 300 clientes sintéticos sin clave; con consentimiento se consulta Groq dentro de la cuota pública diaria. Solo el guardado y la consulta del historial privado requieren validar APP_API_KEY mediante `/api/session`. GROQ_API_KEY permanece exclusivamente en el servidor. No compartir claves del proveedor.
 
 Render Free no establece una caducidad fija para este servicio web: se suspende después de 15 minutos sin tráfico y vuelve a arrancar con una visita, normalmente en aproximadamente un minuto. Hay 750 horas gratuitas por espacio de trabajo y mes, además de cuotas de transferencia y compilación. El enlace puede compartirse mientras el servicio y la cuenta estén activos y dentro de cuota. SQLite se pierde al suspender, reiniciar o desplegar; exportar informes. No se ha contratado un plan de pago ni se promete disponibilidad continua. Fuente: https://render.com/docs/free (consultada 21/10/2026).
 

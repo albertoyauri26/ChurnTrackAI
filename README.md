@@ -15,9 +15,9 @@ python -m venv .venv
 .\.venv\Scripts\python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --no-access-log
 ```
 
-Abrir [la aplicación local](http://127.0.0.1:8000). `scripts/start.ps1` también inicia el servidor. En este entorno ya se creó `.venv`; si `ensurepip` no está disponible, un Python con pip puede instalar dentro de ella con `python -m pip --python .venv\Scripts\python.exe install -r requirements.txt`.
+Abrir [la aplicación local](http://127.0.0.1:8000). `scripts/start.ps1` también inicia el servidor. Si `.venv` se creó en otra máquina (su `pyvenv.cfg` apunta a un Python inexistente), borrarla y volver a crearla con el Python 3.13 local.
 
-1. En **Inicio**, elegir **Cliente individual** o **Cartera CSV**, ingresar indicadores y pulsar **Analizar churn**. No se solicita clave de acceso para este análisis temporal.
+1. En **Inicio**, elegir **Un cliente** o **Cartera de clientes**, ingresar indicadores y pulsar **Analizar churn**. No se solicita clave de acceso para este análisis temporal. Mientras se ejecuta, el panel muestra el estado real de Supervisor, Predictivo y Retención (pendiente, ejecutando, completado o error) con los mensajes que emite el servidor.
 2. Revisar resultados y factores en **Diagnóstico**.
 3. En **Recomendaciones**, seleccionar cliente y agente: Predictivo interpreta evidencia; Retención propone una acción; Supervisor revisa la propuesta. Cada etapa indica si realmente respondió el LLM o si se usaron reglas. Descargar informe y traza JSON.
 4. En **Aceptación**, aceptar/rechazar individualmente o aceptar pendientes elegibles. Las propuestas marcadas para revisión adicional quedan fuera de la aceptación masiva. No se envían correos ni se modifica CRM.
@@ -27,6 +27,17 @@ Abrir [la aplicación local](http://127.0.0.1:8000). `scripts/start.ps1` tambié
 ## Proveedor LLM
 
 Configurar exclusivamente en Render Environment o .env ignorado: `LLM_PROVIDER=groq`, `GROQ_API_KEY`, `GROQ_MODEL=openai/gpt-oss-20b`. Alternativamente `LLM_PROVIDER=gemini`, `GEMINI_API_KEY` y `GEMINI_MODEL`. Nunca introducir claves en la interfaz ni versionarlas.
+
+| Variable | Finalidad | Valor por defecto |
+|---|---|---|
+| `LLM_PROVIDER` | `groq` o `gemini` | `groq` |
+| `GROQ_API_KEY` / `GROQ_MODEL` | Credencial y modelo de Groq | vacío / `openai/gpt-oss-20b` |
+| `GEMINI_API_KEY` / `GEMINI_MODEL` | Proveedor alternativo | vacío / `gemini-3.1-flash-lite` |
+| `APP_API_KEY` | Acceso al historial y decisiones persistidas | vacío (privado deshabilitado) |
+| `DATABASE_URL` | SQLite o PostgreSQL | `sqlite:///runtime/churn.db` |
+| `LLM_DAILY_LIMIT` | Intentos de proveedor por día | `50` |
+| `PUBLIC_LLM_DAILY_LIMIT` | Análisis públicos con LLM por día | `10` |
+| `PORT` | Puerto del servidor | `8000` |
 
 Las tres etapas usan respuestas estructuradas y validación semántica. El riesgo siempre procede de la red neuronal. Hasta 20 clientes de mayor riesgo reciben revisión LLM; todos los demás mantienen inferencia y recomendaciones por reglas explícitas. Si falla el proveedor, se informa sin simular respuestas exitosas. El aviso junto a Analizar explica el envío de indicadores sin códigos al proveedor.
 
@@ -49,12 +60,13 @@ DEMO-001,24,5,800,2,30,1
 | `GET /api/config` | Configuración no sensible | Público |
 | `GET /api/metrics` | Diagnóstico medido del artefacto | Público |
 | `POST /api/demo` | Datos sintéticos fijos, sin persistencia | Público |
-| `POST /api/public/analyze` | JSON: hasta 300 clientes, LLM con consentimiento, sin persistencia | Público |
-| `POST /api/public/analyze-csv` | CSV validado; use_llm y consent; sin persistencia | Público |
+| `POST /api/public/analyze` | JSON: hasta 300 clientes, LLM con consentimiento, sin persistencia. `?stream=true` emite cada mensaje de la traza por SSE y al final el informe | Público |
+| `POST /api/public/validate-csv` | Valida el CSV completo y devuelve 5 filas de vista previa, sin inferencia ni LLM | Público |
+| `POST /api/public/analyze-csv` | CSV validado; `use_llm`, `consent` y `stream`; sin persistencia | Público |
 | `POST /api/demo/llm` | Prueba LLM con ejemplos fijos y presupuesto limitado | Público |
 | `POST /api/runs/{id}/approve-pending` | Acepta pendientes sin sobrescribir rechazos; no ejecuta acciones | Bearer |
-| `POST /api/analyze` | JSON con `customers`, `use_llm`, `consent_external_processing` | Bearer |
-| `POST /api/analyze-csv` | Cuerpo `text/csv`; opciones `use_llm` y `consent` | Bearer |
+| `POST /api/analyze` | JSON con `customers`, `use_llm`, `consent_external_processing`; admite `?stream=true` | Bearer |
+| `POST /api/analyze-csv` | Cuerpo `text/csv`; opciones `use_llm`, `consent` y `stream` | Bearer |
 | `GET /api/runs` | Últimas 100 ejecuciones | Bearer |
 | `GET /api/runs/{id}` | Informe, traza y decisiones | Bearer |
 | `POST /api/runs/{id}/decisions/{cliente_id}` | `{"decision":"approved"}` o `rejected` | Bearer |
@@ -110,16 +122,18 @@ El notebook original se conserva localmente y se excluye de publicación automá
 - [Arquitectura, agentes y seguridad](docs/ARQUITECTURA.md)
 - [Requisitos y aceptación](docs/REQUISITOS.md)
 - [Guía Render y costos](docs/DESPLIEGUE.md)
-- [Evidencias y pruebas](docs/EVIDENCIAS.md)
+- [Evidencias, casos de prueba y matriz A–K](docs/EVIDENCIAS.md)
+- [Recorrido de evaluación](docs/RECORRIDO_PROFESOR.md)
+- [Uso empresarial y límites](docs/USO_EMPRESARIAL.md)
 
 Pendientes técnicos: validación con datos empresariales, almacenamiento durable y comprobación desde otro dispositivo. Groq cuenta con evidencia pública de respuestas válidas; el adaptador Gemini no tiene una generación exitosa acreditada.
 
 
 ## Recorrido para el profesor
 
-En Inicio, **Iniciar recorrido con Gemini** ejecuta tres casos ficticios sin clave de acceso. Muestra la llamada real, estado, intentos, duración, uso informado y respuesta validada; los fallos se distinguen de la generación exitosa. Se puede recorrer cada agente y simular una decisión solo en la pestaña. La demo de 300 sigue disponible sin proveedor. Detalles y límites en [RECORRIDO_PROFESOR.md](docs/RECORRIDO_PROFESOR.md).
+Recorrido sin claves, paso a paso, en [RECORRIDO_PROFESOR.md](docs/RECORRIDO_PROFESOR.md). **Configuración → Probar LLM con ejemplos, sin clave** ejecuta tres casos ficticios con Groq y muestra intentos, duración, tokens y respuesta validada; los fallos se distinguen de una generación exitosa.
 
-`POST /api/demo/gemini` solo admite fixtures internos: sin cuerpo ni parámetros, caché explícito de diez minutos, una ejecución concurrente y hasta cinco nuevas demostraciones diarias con LLM (máximo dos intentos cada una), sujeto además al presupuesto global y a la persistencia del almacenamiento. Datos propios e historiales siguen requiriendo autorización. 37 pruebas pasan; las pruebas reales recientes de Google siguen sin acreditar una generación exitosa.
+`POST /api/demo/llm` (alias `/api/demo/gemini`) solo admite fixtures internos: sin cuerpo ni parámetros, caché explícito de diez minutos, una ejecución concurrente y hasta cinco demostraciones nuevas por día con LLM, dentro del contador público diario y del presupuesto global.
 
 
 

@@ -10,7 +10,7 @@ Actores: docente/visitante (análisis temporal), analista autorizado (datos e in
 | RF04 | P0 | Delegación entre tres agentes | Supervisor | Misma ejecución registra predictivo, retención y supervisor | Probado |
 | RF05 | P0 | Recomendación fundamentada | Retención | Acción y claves de evidencia pertenecen al catálogo permitido | Probado con reglas y dobles; evidencia pública por separado |
 | RF06 | P0 | Control de coherencia y reparación | Supervisor | Detecta salida incompleta y solicita corrección | Probado |
-| RF07 | P0 | LLM en tres etapas | Predictivo/Retención/Supervisor | Llamada externa exitosa con uso real y JSON validado | Groq configurado; ver traza pública actual |
+| RF07 | P0 | LLM en tres etapas | Predictivo/Retención/Supervisor | Llamada externa exitosa con uso real y JSON validado | Verificado con Groq en producción (CP01, CP02 en EVIDENCIAS.md) |
 | RF08 | P0 | Aprobación humana | API/DB | Decisión persistida e inmutable; no ejecuta acción externa | Probado |
 | RF09 | P0 | Auditoría y recuperación | Supervisor/DB | ID, fechas, mensajes, herramientas y resultados recuperables | Probado SQLite |
 | RF10 | P1 | Dashboard y segmentación | Frontend | KPI calculados, búsqueda, orden y filtros sobre resultados | Revisado en navegador |
@@ -19,10 +19,11 @@ Actores: docente/visitante (análisis temporal), analista autorizado (datos e in
 | RF13 | P0 | Acceso a endpoints privados | API | Sin clave responde 401; análisis público no persiste; historial privado protegido | Probado |
 | RF14 | P0 | Servicio HTTPS público | Render | URL verificada, `/health`, UI, modelo y tres agentes remotos | Publicado en Render |
 | RF15 | P1 | Métricas reproducibles | Evaluación | Script genera matriz, ROC, baseline y comparación contra JS | Ejecutado |
+| RF16 | P1 | Estado de agentes en vivo | Supervisor/Frontend | Con `?stream=true` cada mensaje de la traza llega por SSE antes del informe; la interfaz muestra pendiente, ejecutando, completado o error | Probado en local (CP07); pendiente de verificar en producción tras desplegar |
 
 ## Requisitos no funcionales
 
-- Rendimiento objetivo del MVP: lote de 300 clientes en menos de 3 segundos sin LLM en una máquina local; medir aparte Render Free. Las medidas HTTP actuales están en `evidence/http-measurements.json`; no se generalizan a producción.
+- Rendimiento objetivo del MVP: lote de 300 clientes en menos de 3 segundos sin LLM. En Render Free, seis lotes simultáneos de 300 terminaron en 11,5 s como máximo, es decir, unos 1,9 s por lote atendido en serie (CP11). Un lote de 300 con las tres etapas LLM tardó 4,7 s (CP01). No hay SLA.
 - Disponibilidad: `/health` verifica red cargada y base accesible. No hay SLA académico ni disponibilidad medida durante semanas.
 - Seguridad: secretos fuera del repositorio, claves en memoria del navegador, CSP, límites de tamaño, cuota, timeout y ausencia de acciones externas autónomas.
 - Privacidad: códigos anónimos, sin datos libres ni identificadores enviados al LLM, consentimiento y demo sintética.
