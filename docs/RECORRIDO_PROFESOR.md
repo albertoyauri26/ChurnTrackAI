@@ -1,6 +1,6 @@
 # Recorrido de evaluación sin claves
 
-1. Abrir https://churntrackai.onrender.com/. La primera visita puede tardar cerca de un minuto si Render Free suspendió el servicio.
+1. Abrir https://churntrackai-4omr.onrender.com/. La primera visita puede tardar cerca de un minuto si Render Free suspendió el servicio.
 2. En **Inicio**, dejar **Un cliente** con los valores sugeridos o elegir **Cartera de clientes**, descargar «Ejemplo de 300 clientes sintéticos» y cargarlo. La vista previa valida todas las filas sin ejecutar el modelo ni consultar el LLM.
 3. Pulsar **Analizar churn**. Mientras el servidor trabaja, el panel muestra Supervisor (orquestador), Predictivo y Retención como pendiente, ejecutando, completado o error. Cada cambio corresponde a un mensaje real que el backend emite al registrarlo.
 4. **Diagnóstico**: riesgo alto, medio y bajo, probabilidad por cliente y factores por sustitución a la media. Son asociaciones del modelo, no causas.

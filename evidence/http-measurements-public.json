@@ -1,24 +1,24 @@
 {
-  "created": "2026-10-25T00:04:51.357908+00:00",
-  "base_url": "https://churntrackai.onrender.com",
+  "created": "2026-10-25T00:31:12.490346+00:00",
+  "base_url": "https://churntrackai-4omr.onrender.com",
   "scope": "PUBLIC HTTPS from development computer",
   "measurements": {
     "/health": {
       "samples": 5,
-      "median_ms": 188.7661999789998,
-      "max_ms": 588.5862000286579,
+      "median_ms": 187.98089993651956,
+      "max_ms": 241.92110006697476,
       "status": 200
     },
     "/": {
       "samples": 5,
-      "median_ms": 186.4092000760138,
-      "max_ms": 205.19929996225983,
+      "median_ms": 189.1057000029832,
+      "max_ms": 198.25540005695075,
       "status": 200
     },
     "/api/demo": {
       "samples": 5,
-      "median_ms": 200.64479997381568,
-      "max_ms": 217.08550001494586,
+      "median_ms": 197.5371999433264,
+      "max_ms": 277.2521999431774,
       "status": 200
     }
   },
@@ -28,8 +28,8 @@
     "status_counts": {
       "200": 6
     },
-    "median_ms": 11313.633949961513,
-    "max_ms": 11468.753000022843
+    "median_ms": 10375.169849954545,
+    "max_ms": 10381.588999996893
   },
   "health": {
     "status": "ok",

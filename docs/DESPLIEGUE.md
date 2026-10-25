@@ -2,7 +2,7 @@
 
 ## Estado de publicación
 
-Aplicación: https://churntrackai.onrender.com. Repositorio: https://github.com/ManuelCarranzaAv/ChurnTrackAI. Salud: https://churntrackai.onrender.com/health. Servicio Render `srv-dbc4qnon74is73fcthvg`, Free, Docker, región Oregon. El despliegue inicial fue confirmado live; la verificación de cada actualización se conserva separadamente. No se ha probado desde un segundo dispositivo físico.
+Aplicación: https://churntrackai-4omr.onrender.com. Repositorio: https://github.com/albertoyauri26/ChurnTrackAI. Salud: https://churntrackai-4omr.onrender.com/health. Servicio Render `srv-dbekqo0ae00c73dfnj20`: Free, Docker, región Oregon, despliegue automático en cada commit a `main`. Se creó el 24/10/2026 con la API de Render y sus variables equivalen a `render.yaml`; el commit `a9c9345` quedó live ese día (`evidence/deployment.json`). El despliegue original del equipo sigue en https://churntrackai.onrender.com (repositorio https://github.com/ManuelCarranzaAv/ChurnTrackAI). No se ha probado desde un segundo dispositivo físico.
 
 ## Elección de plataforma
 
@@ -35,7 +35,7 @@ git remote add origin <URL_REAL_DEL_REPOSITORIO>
 git push -u origin HEAD
 ```
 
-No ejecutar marcadores `<...>` literalmente. Si ya hay un remoto, comprobarlo y actualizarlo sin sobrescribir repositorios ajenos. No se requieren GitHub Actions. Este servicio se vinculó mediante URL pública de GitHub: se dispara manualmente cada despliegue y se verifica el commit publicado.
+No ejecutar marcadores `<...>` literalmente. Si ya hay un remoto, comprobarlo y actualizarlo sin sobrescribir repositorios ajenos. No se requieren GitHub Actions. El servicio original se vinculó por URL pública y se desplegaba manualmente; el servicio actual tiene `autoDeployTrigger=commit`. Tras cada despliegue se verifica el commit publicado.
 
 ## Crear el servicio
 
