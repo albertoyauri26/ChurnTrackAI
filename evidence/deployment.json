@@ -1,0 +1,28 @@
+{
+  "url": "https://churntrackai-4omr.onrender.com",
+  "repository": "https://github.com/albertoyauri26/ChurnTrackAI",
+  "service_id": "srv-dbekqo0ae00c73dfnj20",
+  "deploy_id": "dep-dbekqo8ae00c73dfnjog",
+  "plan": "free",
+  "runtime": "docker",
+  "region": "oregon",
+  "auto_deploy_trigger": "commit",
+  "status": "live",
+  "deployed_commit": "a9c9345",
+  "created": "2026-10-25T00:29:21Z",
+  "finished_at": "2026-10-25T00:30:03Z",
+  "verified": {
+    "health": "ok",
+    "llm_provider": "groq",
+    "llm_model": "openai/gpt-oss-20b",
+    "streamed_three_stage_llm_run": "evidence/live-stream-public.json",
+    "http": "evidence/http-measurements-public.json"
+  },
+  "previous_deployment": {
+    "url": "https://churntrackai.onrender.com",
+    "repository": "https://github.com/ManuelCarranzaAv/ChurnTrackAI",
+    "service_id": "srv-dbc4qnon74is73fcthvg",
+    "last_recorded_commit": "bbf4f7dfc73d367e8297259f71002dc876446a4e",
+    "verified_date": "2026-10-21"
+  }
+}

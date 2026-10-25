@@ -1,6 +1,6 @@
 {
-  "id": "af75f11f-8843-4c65-8158-bc1dfb4f9069",
-  "created": "2026-10-25T00:04:39.410914+00:00",
+  "id": "95799d96-9c29-4e58-9624-318a4b57959e",
+  "created": "2026-10-25T00:31:01.526573+00:00",
   "status": "completed",
   "predictions": [
     {
@@ -777,7 +777,7 @@
   "trace": [
     {
       "sequence": 1,
-      "timestamp": "2026-10-25T00:04:39.410960+00:00",
+      "timestamp": "2026-10-25T00:31:01.526646+00:00",
       "sender": "usuario",
       "recipient": "supervisor",
       "tool": "analysis_request",
@@ -790,7 +790,7 @@
     },
     {
       "sequence": 2,
-      "timestamp": "2026-10-25T00:04:39.410977+00:00",
+      "timestamp": "2026-10-25T00:31:01.526681+00:00",
       "sender": "supervisor",
       "recipient": "predictivo",
       "tool": "delegate_prediction",
@@ -801,7 +801,7 @@
     },
     {
       "sequence": 3,
-      "timestamp": "2026-10-25T00:04:39.417293+00:00",
+      "timestamp": "2026-10-25T00:31:01.535752+00:00",
       "sender": "predictivo",
       "recipient": "supervisor",
       "tool": "neural_inference_and_mean_ablation",
@@ -1090,7 +1090,7 @@
     },
     {
       "sequence": 4,
-      "timestamp": "2026-10-25T00:04:39.417324+00:00",
+      "timestamp": "2026-10-25T00:31:01.535792+00:00",
       "sender": "supervisor",
       "recipient": "retencion",
       "tool": "delegate_retention",
@@ -1102,7 +1102,7 @@
     },
     {
       "sequence": 5,
-      "timestamp": "2026-10-25T00:04:39.417471+00:00",
+      "timestamp": "2026-10-25T00:31:01.535932+00:00",
       "sender": "retencion",
       "recipient": "supervisor",
       "tool": "recommendations",
@@ -1212,14 +1212,22 @@
     },
     {
       "sequence": 6,
-      "timestamp": "2026-10-25T00:04:39.417524+00:00",
+      "timestamp": "2026-10-25T00:31:01.535996+00:00",
       "sender": "supervisor",
       "recipient": "usuario",
       "tool": "validated_report",
       "status": "ok",
       "payload": {
         "approved_for_human_review": true,
-        "external_actions_executed": 0
+        "external_actions_executed": 0,
+        "customers": 12,
+        "risk": {
+          "ALTO": 4,
+          "MEDIO": 1,
+          "BAJO": 7
+        },
+        "llm_recommendations": 0,
+        "flagged_for_review": []
       }
     }
   ],
@@ -1412,7 +1420,7 @@
       "corrections": 0
     }
   },
-  "elapsed_ms": 6.91,
+  "elapsed_ms": 9.69,
   "model_sha256": "bf9b63beea3d7565ab920e6d8459ff3de627609a207c2b8bd3c58c84eca77ca8",
   "demo": true,
   "ephemeral": true,

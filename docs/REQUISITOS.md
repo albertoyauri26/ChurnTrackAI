@@ -19,11 +19,11 @@ Actores: docente/visitante (análisis temporal), analista autorizado (datos e in
 | RF13 | P0 | Acceso a endpoints privados | API | Sin clave responde 401; análisis público no persiste; historial privado protegido | Probado |
 | RF14 | P0 | Servicio HTTPS público | Render | URL verificada, `/health`, UI, modelo y tres agentes remotos | Publicado en Render |
 | RF15 | P1 | Métricas reproducibles | Evaluación | Script genera matriz, ROC, baseline y comparación contra JS | Ejecutado |
-| RF16 | P1 | Estado de agentes en vivo | Supervisor/Frontend | Con `?stream=true` cada mensaje de la traza llega por SSE antes del informe; la interfaz muestra pendiente, ejecutando, completado o error | Probado en local (CP07); pendiente de verificar en producción tras desplegar |
+| RF16 | P1 | Estado de agentes en vivo | Supervisor/Frontend | Con `?stream=true` cada mensaje de la traza llega por SSE antes del informe; la interfaz muestra pendiente, ejecutando, completado o error | Verificado en producción y en local (CP07) |
 
 ## Requisitos no funcionales
 
-- Rendimiento objetivo del MVP: lote de 300 clientes en menos de 3 segundos sin LLM. En Render Free, seis lotes simultáneos de 300 terminaron en 11,5 s como máximo, es decir, unos 1,9 s por lote atendido en serie (CP11). Un lote de 300 con las tres etapas LLM tardó 4,7 s (CP01). No hay SLA.
+- Rendimiento objetivo del MVP: lote de 300 clientes en menos de 3 segundos sin LLM. En Render Free, seis lotes simultáneos de 300 terminaron en 10,4 s como máximo, es decir, unos 1,7 s por lote atendido en serie (CP11). Un lote de 300 con las tres etapas LLM tardó 4,7 s (CP01). No hay SLA.
 - Disponibilidad: `/health` verifica red cargada y base accesible. No hay SLA académico ni disponibilidad medida durante semanas.
 - Seguridad: secretos fuera del repositorio, claves en memoria del navegador, CSP, límites de tamaño, cuota, timeout y ausencia de acciones externas autónomas.
 - Privacidad: códigos anónimos, sin datos libres ni identificadores enviados al LLM, consentimiento y demo sintética.
