@@ -6,7 +6,7 @@
   "plan": "free",
   "runtime": "docker",
   "region": "oregon",
-  "auto_deploy_trigger": "commit",
+  "auto_deploy_trigger": "commit (configured; no GitHub webhook: push of 98c9823 did not trigger a deploy, manual deploys required)",
   "status": "live",
   "deployed_commit": "a9c9345",
   "created": "2026-10-25T00:29:21Z",
