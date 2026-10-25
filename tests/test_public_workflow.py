@@ -78,3 +78,29 @@ def test_llm_public_alias_keeps_fixture_only(client):
     assert client.post('/api/demo/llm',json={'prompt':'x'}).status_code==422
     run=client.post('/api/demo/llm').json()
     assert len(run['predictions'])==3 and run['demo'] and run['ephemeral']
+
+
+def sse(response):
+    return [json.loads(chunk[6:]) for chunk in response.text.split('\n\n') if chunk.startswith('data: ')]
+
+
+def test_stream_emits_each_trace_message_before_the_run(client):
+    from backend.schemas import LLMResponse
+    class Stub:
+        key,name,model='test-double','test','stub'
+        async def choose(self,payload,stage='retencion'):
+            return LLMResponse(choices=[{'index':p['index'],'action':p['allowed_actions'][0],'evidence':['probability']} for p in payload]),{}
+        review=choose
+    client.app.state.supervisor.retention.provider=Stub()
+    response=client.post('/api/public/analyze?stream=true',json={'customers':[ROW],'use_llm':True,'consent_external_processing':True})
+    assert response.headers['content-type'].startswith('text/event-stream')
+    events=sse(response)
+    assert [e['type'] for e in events]==['message']*(len(events)-1)+['result']
+    run=events[-1]['run']
+    assert [e['message'] for e in events[:-1]]==run['trace'] and run['status']=='completed'
+    assert {m['payload']['model'] for m in run['trace'] if m['recipient']=='llm'}=={'stub'}
+    assert run['trace'][-1]['payload']['llm_recommendations']==1
+    columns=list(ROW)
+    body=','.join(columns)+'\n'+','.join(str(ROW[k]) for k in columns)
+    assert sse(client.post('/api/public/analyze-csv?stream=true',content=body))[-1]['run']['status']=='completed'
+    assert client.post('/api/public/analyze-csv?stream=true',content='cliente_id\nX').status_code==422

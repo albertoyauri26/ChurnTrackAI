@@ -1,6 +1,6 @@
 {
-  "id": "f7319efd-b228-4a45-9832-2216b16e8371",
-  "created": "2026-10-21T16:15:50.018539+00:00",
+  "id": "af75f11f-8843-4c65-8158-bc1dfb4f9069",
+  "created": "2026-10-25T00:04:39.410914+00:00",
   "status": "completed",
   "predictions": [
     {
@@ -777,7 +777,7 @@
   "trace": [
     {
       "sequence": 1,
-      "timestamp": "2026-10-21T16:15:50.018579+00:00",
+      "timestamp": "2026-10-25T00:04:39.410960+00:00",
       "sender": "usuario",
       "recipient": "supervisor",
       "tool": "analysis_request",
@@ -790,7 +790,7 @@
     },
     {
       "sequence": 2,
-      "timestamp": "2026-10-21T16:15:50.018595+00:00",
+      "timestamp": "2026-10-25T00:04:39.410977+00:00",
       "sender": "supervisor",
       "recipient": "predictivo",
       "tool": "delegate_prediction",
@@ -801,7 +801,7 @@
     },
     {
       "sequence": 3,
-      "timestamp": "2026-10-21T16:15:50.025442+00:00",
+      "timestamp": "2026-10-25T00:04:39.417293+00:00",
       "sender": "predictivo",
       "recipient": "supervisor",
       "tool": "neural_inference_and_mean_ablation",
@@ -1090,7 +1090,7 @@
     },
     {
       "sequence": 4,
-      "timestamp": "2026-10-21T16:15:50.025474+00:00",
+      "timestamp": "2026-10-25T00:04:39.417324+00:00",
       "sender": "supervisor",
       "recipient": "retencion",
       "tool": "delegate_retention",
@@ -1102,7 +1102,7 @@
     },
     {
       "sequence": 5,
-      "timestamp": "2026-10-21T16:15:50.025691+00:00",
+      "timestamp": "2026-10-25T00:04:39.417471+00:00",
       "sender": "retencion",
       "recipient": "supervisor",
       "tool": "recommendations",
@@ -1212,7 +1212,7 @@
     },
     {
       "sequence": 6,
-      "timestamp": "2026-10-21T16:15:50.025793+00:00",
+      "timestamp": "2026-10-25T00:04:39.417524+00:00",
       "sender": "supervisor",
       "recipient": "usuario",
       "tool": "validated_report",
@@ -1225,7 +1225,38 @@
   ],
   "warnings": [],
   "usage": [],
+  "llm_attempts": [],
   "mode": "rules",
+  "agent_llm": {
+    "predictivo": {
+      "status": "not_called",
+      "checked_indices": [],
+      "choices": [],
+      "reason": "Sin solicitud, configuraci\u00f3n o herramienta de revisi\u00f3n LLM."
+    },
+    "supervisor": {
+      "status": "not_called",
+      "checked_indices": [],
+      "choices": [],
+      "reason": "Sin solicitud, configuraci\u00f3n o herramienta de revisi\u00f3n LLM."
+    },
+    "retencion": {
+      "status": "not_called",
+      "checked_indices": []
+    }
+  },
+  "llm_report": {
+    "requested": false,
+    "provider": "groq",
+    "model": "openai/gpt-oss-20b",
+    "api": "chat/completions",
+    "status": "not_called",
+    "attempts": [],
+    "message": "No se realiz\u00f3 una llamada al LLM. Revisa las advertencias si fue solicitado.",
+    "usage": [],
+    "identifiers_sent": false,
+    "selected_customers": 0
+  },
   "analytics": {
     "count": 12,
     "mean_probability": 0.39743033960233437,
@@ -1381,9 +1412,10 @@
       "corrections": 0
     }
   },
-  "elapsed_ms": 7.63,
+  "elapsed_ms": 6.91,
   "model_sha256": "bf9b63beea3d7565ab920e6d8459ff3de627609a207c2b8bd3c58c84eca77ca8",
   "demo": true,
+  "ephemeral": true,
   "summary": {
     "customers": 12,
     "high": 4,

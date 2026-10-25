@@ -1,31 +1,19 @@
 # Recorrido de evaluación sin claves
 
-1. Abrir https://churntrackai.onrender.com/ y pulsar **Iniciar demostración sin clave**. Los tres agentes procesan doce ejemplos sintéticos con la red neuronal y reglas; no requiere cuenta ni proveedor externo.
-2. Seguir la guía para explorar Predictivo, Retención y Supervisor. Cambiar de cliente y observar entradas, decisiones y validaciones reales del informe.
-3. Desde Supervisor, pulsar **Revisar esta acción**. En Decisiones se puede aceptar o rechazar propuestas; solo modifica la pestaña actual.
-4. Pulsar **Preparar documento de seguimiento** para obtener un borrador o nota interna TXT. **Descargar plan de seguimiento CSV** exporta responsables propuestos, plazos y criterios de éxito. Son herramientas reales de exportación basadas en plantillas; no envían correos ni crean tareas en un CRM.
-5. Opcionalmente, usar **Probar LLM (opcional)** o el botón de Configuración **Probar LLM con ejemplos, sin clave**. Analiza tres ejemplos fijos sin acceso privado. Revisar intentos, duración, resultado y tokens cuando el proveedor los informe. Un fallo se muestra explícitamente y los agentes continúan con reglas.
-6. Para revisar escala, volver a Inicio y usar la demostración de 300 clientes. Los datos propios también se analizan sin clave desde Nuevo análisis. Solo para guardar/consultar el historial privado o usar el LLM con datos propios se necesita APP_API_KEY.
+1. Abrir https://churntrackai.onrender.com/. La primera visita puede tardar cerca de un minuto si Render Free suspendió el servicio.
+2. En **Inicio**, dejar **Un cliente** con los valores sugeridos o elegir **Cartera de clientes**, descargar «Ejemplo de 300 clientes sintéticos» y cargarlo. La vista previa valida todas las filas sin ejecutar el modelo ni consultar el LLM.
+3. Pulsar **Analizar churn**. Mientras el servidor trabaja, el panel muestra Supervisor (orquestador), Predictivo y Retención como pendiente, ejecutando, completado o error. Cada cambio corresponde a un mensaje real que el backend emite al registrarlo.
+4. **Diagnóstico**: riesgo alto, medio y bajo, probabilidad por cliente y factores por sustitución a la media. Son asociaciones del modelo, no causas.
+5. **Recomendaciones**: elegir un cliente y alternar entre los tres agentes. Se ve qué recibió, qué herramienta usó y qué entregó cada uno, si la respuesta del LLM se validó o se usaron reglas, el proveedor y modelo, y los mensajes intercambiados. «Ver evidencia de las consultas al LLM» muestra la solicitud sin códigos y la respuesta validada; «Descargar informe y traza JSON» exporta la ejecución completa.
+6. **Aceptación**: aceptar o rechazar cada propuesta, o aceptar todas las pendientes elegibles. Las marcadas por el Supervisor con `request_review` quedan fuera. «Preparar documento de seguimiento» y «Descargar plan de seguimiento CSV» generan archivos reales; no se envían mensajes ni se crean tareas externas.
+7. **Configuración → Probar LLM con ejemplos, sin clave** ejecuta tres casos fijos del servidor y muestra intentos, duración, tokens y respuesta validada, o el fallo real del proveedor.
 
 ## Límites y evidencia
 
-- `POST /api/demo/gemini` acepta exclusivamente fixtures sintéticos del servidor. Rechaza cuerpo y parámetros; no expone historiales ni permite enviar prompts arbitrarios.
-- Una demostración a la vez, hasta cinco ejecuciones nuevas con permiso de LLM por día UTC. Cada una puede hacer hasta dos intentos; también aplica el presupuesto global de llamadas del proveedor. El contador se conserva en la base de datos y está sujeto a las limitaciones de SQLite efímero en Render.
-- Se reutiliza el resultado diez minutos, identificando la fecha original y que no se ha hecho una llamada nueva. El caché permanece únicamente en memoria del proceso.
-- Las claves quedan en el servidor. A Gemini se envían indicadores e índices numéricos, sin códigos de cliente.
-- El LLM selecciona acciones permitidas; no calcula el riesgo ni redacta libremente los planes. Los planes provienen del catálogo y se validan junto a la evidencia.
-- El registro representa la ejecución completada, no eventos en vivo. La interfaz no inventa respuestas, tokens ni disponibilidad.
-- Las pruebas de integración real realizadas el 21/10/2026 devolvieron errores de disponibilidad. También se comprobó la API Interactions oficial y no se obtuvo generación exitosa; se conserva la integración generateContent soportada. Las pruebas con dobles verifican las ramas de éxito y fallo, pero no se presentan como evidencia de generación de Google.
+- El análisis público no se guarda. Solo el historial privado requiere APP_API_KEY.
+- Groq recibe únicamente los seis indicadores numéricos e índices de hasta 20 clientes priorizados, nunca códigos de cliente. El LLM elige acciones del catálogo; no calcula el riesgo ni redacta los planes.
+- Cuotas: 10 análisis públicos con LLM por día (compartidos con la prueba de ejemplos fijos, que admite 5), 50 intentos de proveedor por día. Si se agotan, la ejecución lo indica y usa reglas explícitas.
+- `POST /api/demo/llm` (alias histórico `/api/demo/gemini`) acepta solo los ejemplos del servidor, rechaza cuerpo y parámetros, ejecuta una demostración a la vez y reutiliza el resultado durante 10 minutos indicándolo.
+- Un fallo del proveedor se muestra explícitamente y los agentes continúan con reglas; nunca se presenta como respuesta del LLM.
 
-## Verificación
-
-45 pruebas automatizadas cubren el sistema, incluyendo entrada fija, aislamiento privado, reutilización, presupuesto público, exclusión concurrente, respuesta LLM válida con doble y errores reales representados sin generación ficticia. Se prueba además el recorrido en navegador sin autenticación. `node tests/actions.cjs` verifica la preparación de documentos, las etiquetas de ejecución, el escape CSV y la protección contra fórmulas.
-
-
-## Análisis propio sin clave y aprobación masiva
-
-Nuevo análisis permite un cliente o CSV de hasta 300 filas. El servidor procesa los indicadores con red neuronal y reglas, sin persistencia ni llamadas externas. El diagnóstico muestra los seis factores, el origen de la propuesta y los controles del supervisor por cliente. «Aceptar todas las pendientes» afecta toda la ejecución, incluso fuera de los filtros; conserva rechazos y aprobaciones previas. Las decisiones temporales se exportan y se pierden al recargar. Ninguna aceptación ejecuta acciones externas.
-
-## Proveedor alternativo
-
-Groq está implementado; requiere `LLM_PROVIDER=groq`, `GROQ_API_KEY` en Render y nuevo despliegue. `GROQ_MODEL` predeterminado: `openai/gpt-oss-20b`. No confundir la prueba con dobles automatizados con una respuesta real. La consola muestra proveedor/modelo y únicamente marca éxito tras validar respuesta y evidencia. No hay una clave gratuita compartida dentro del código.
+Verificación automatizada: `pytest` (64 pruebas), `node tests/actions.cjs` y `node tests/clarity.cjs`. Resultados en [EVIDENCIAS.md](EVIDENCIAS.md).

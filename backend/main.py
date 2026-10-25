@@ -2,6 +2,7 @@ import asyncio
 import csv
 import io
 import json
+import logging
 import os
 import secrets
 import copy
@@ -11,7 +12,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import FileResponse, JSONResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.exc import IntegrityError
 from pydantic import ValidationError
@@ -123,11 +124,38 @@ def create_app(db_url=None):
         except ProviderError as exc:
             return {'available':False,'message':explain_error(str(exc)),'code':str(exc),'model':provider.model}
 
-    async def execute(payload,persist=True,demo=False):
+    async def execute(payload,persist=True,demo=False,listener=None):
         if app.state.slots.locked():
             raise HTTPException(429,'Dos análisis en curso. Intenta nuevamente.')
         async with app.state.slots:
-            return await supervisor.run(payload,persist=persist,demo=demo)
+            return await supervisor.run(payload,persist=persist,demo=demo,listener=listener)
+
+    def live_run(payload,persist,warning=None):
+        # Server-sent events: each trace message as the agents record it, then the full run.
+        if app.state.slots.locked():
+            raise HTTPException(429,'Dos análisis en curso. Intenta nuevamente.')
+        queue = asyncio.Queue()
+        async def produce():
+            try:
+                run = await execute(payload,persist,listener=lambda m:queue.put_nowait({'type':'message','message':m.model_dump()}))
+                if warning:
+                    run['warnings'].append(warning)
+                queue.put_nowait({'type':'result','run':run})
+            except Exception as exc:
+                if not isinstance(exc,HTTPException):
+                    logging.getLogger('churntrackai').exception('stream_failed')
+                queue.put_nowait({'type':'error','detail':exc.detail if isinstance(exc,HTTPException) else 'El análisis no pudo completarse.'})
+        async def events():
+            task = asyncio.create_task(produce())
+            try:
+                while True:
+                    event = await queue.get()
+                    yield f'data: {json.dumps(event,allow_nan=False)}\n\n'
+                    if event['type'] != 'message':
+                        return
+            finally:
+                task.cancel()
+        return StreamingResponse(events(),media_type='text/event-stream',headers={'X-Accel-Buffering':'no'})
 
     @app.post('/api/demo')
     async def demo(size:int=12):
@@ -171,22 +199,25 @@ def create_app(db_url=None):
             return result
 
     @app.post('/api/public/analyze')
-    async def public_analyze(payload:AnalysisRequest):
-        return await execute_public(payload)
+    async def public_analyze(payload:AnalysisRequest,stream:bool=False):
+        return await execute_public(payload,stream)
 
-    async def execute_public(payload):
+    async def execute_public(payload,live=False):
         # Only validated numeric indicators are accepted; never arbitrary prompts.
         limited = payload.use_llm and not store.reserve_public_demo(int(os.getenv('PUBLIC_LLM_DAILY_LIMIT','10')))
+        warning = 'Cuota pública LLM agotada. Cada cliente recibió análisis neuronal y recomendación por reglas.' if limited else None
         if limited:
             payload = payload.model_copy(update={'use_llm':False})
+        if live:
+            return live_run(payload,False,warning)
         result = await execute(payload,persist=False)
-        if limited:
-            result['warnings'].append('Cuota pública LLM agotada. Cada cliente recibió análisis neuronal y recomendación por reglas.')
+        if warning:
+            result['warnings'].append(warning)
         return result
 
     @app.post('/api/analyze',dependencies=[Depends(authorized)])
-    async def analyze(payload:AnalysisRequest):
-        return await execute(payload)
+    async def analyze(payload:AnalysisRequest,stream:bool=False):
+        return live_run(payload,True) if stream else await execute(payload)
 
     async def parse_csv(request:Request,use_llm:bool=False,consent:bool=False):
         try:
@@ -213,14 +244,15 @@ def create_app(db_url=None):
         return payload
 
     @app.post('/api/analyze-csv',dependencies=[Depends(authorized)])
-    async def analyze_csv(request:Request,use_llm:bool=False,consent:bool=False):
-        return await execute(await parse_csv(request,use_llm,consent))
+    async def analyze_csv(request:Request,use_llm:bool=False,consent:bool=False,stream:bool=False):
+        payload = await parse_csv(request,use_llm,consent)
+        return live_run(payload,True) if stream else await execute(payload)
 
     @app.post('/api/public/analyze-csv')
-    async def public_csv(request:Request,use_llm:bool=False,consent:bool=False):
-        if set(request.query_params)-{'use_llm','consent'}:
-            raise HTTPException(422,'Opciones permitidas: use_llm y consent. El análisis público no se guarda.')
-        return await execute_public(await parse_csv(request,use_llm,consent))
+    async def public_csv(request:Request,use_llm:bool=False,consent:bool=False,stream:bool=False):
+        if set(request.query_params)-{'use_llm','consent','stream'}:
+            raise HTTPException(422,'Opciones permitidas: use_llm, consent y stream. El análisis público no se guarda.')
+        return await execute_public(await parse_csv(request,use_llm,consent),stream)
 
     @app.post('/api/public/validate-csv')
     async def validate_csv(request:Request):

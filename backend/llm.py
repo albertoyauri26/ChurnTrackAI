@@ -170,7 +170,7 @@ class GroqProvider:
 
 
 def configured_provider():
-    name = os.getenv('LLM_PROVIDER', 'gemini').lower()
+    name = os.getenv('LLM_PROVIDER', 'groq').lower()
     if name == 'groq':
         return GroqProvider()
     if name == 'gemini':

@@ -1,12 +1,15 @@
 import asyncio
+import logging
 import os
 import time
 import uuid
 from datetime import datetime, timezone
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PrivateAttr
 from .schemas import AnalysisRequest, Message, Prediction, Recommendation, LLMResponse
 from .llm import ProviderError, explain_error
 from .analytics import portfolio
+
+log = logging.getLogger('churntrackai.agents')
 
 def now():
     return datetime.now(timezone.utc).isoformat()
@@ -64,11 +67,14 @@ class SharedState(BaseModel):
     llm_attempts: list[dict] = Field(default_factory=list)
     mode: str = 'rules'
     agent_llm: dict = Field(default_factory=dict)
+    _listener: object = PrivateAttr(default=None)
 
     def send(self, sender, recipient, tool, payload, status='ok'):
         if len(self.trace) >= 32:
             raise RuntimeError('MAX_STEPS')
         self.trace.append(Message(sequence=len(self.trace)+1, timestamp=now(), sender=sender, recipient=recipient, tool=tool, status=status, payload=payload))
+        if self._listener:
+            self._listener(self.trace[-1])
 
 async def review_stage(stage, request, state, provider, store):
     report = {'status':'not_called','checked_indices':[],'choices':[]}
@@ -90,7 +96,7 @@ async def review_stage(stage, request, state, provider, store):
             rec = state.recommendations[i]
             row['proposal'] = {'action':rec.action,'evidence':rec.evidence,'steps':rec.steps}
         payload.append(row)
-    state.send(stage,'llm',stage+'_llm_request',{'input':payload,'identifiers_removed':True})
+    state.send(stage,'llm',stage+'_llm_request',{'input':payload,'identifiers_removed':True,'provider':getattr(provider,'name','test-provider'),'model':getattr(provider,'model','test-provider')})
     start = time.perf_counter()
     try:
         response, usage = await provider.review(payload,stage)
@@ -112,6 +118,7 @@ async def review_stage(stage, request, state, provider, store):
         state.send('llm',stage,stage+'_llm_result',{'error':str(exc)},'error')
         state.llm_attempts.append({'agent':stage,'attempt':1,'status':'failed','code':str(exc),'elapsed_ms':round((time.perf_counter()-start)*1000,2)})
         state.warnings.append(stage+': '+explain_error(str(exc)))
+        log.warning('llm_failed agent=%s attempt=1 code=%s elapsed_ms=%.0f', stage, exc, (time.perf_counter()-start)*1000)
 
 class PredictiveAgent:
     def __init__(self, model):
@@ -145,7 +152,7 @@ class RetentionAgent:
             interpretation={c['index']:c for c in state.agent_llm.get('predictivo',{}).get('choices',[])}
             for row in payload:
                 if row['index'] in interpretation: row['predictive_review']=interpretation[row['index']]
-            state.send('retencion','llm','structured_selection_request', {'input':payload, 'identifiers_removed':True})
+            state.send('retencion','llm','structured_selection_request', {'input':payload, 'identifiers_removed':True, 'provider':getattr(self.provider,'name','test-provider'), 'model':getattr(self.provider,'model','test-provider')})
             for attempt in range(2):
                 if not self.provider.key:
                     state.warnings.append('LLM no configurado. Se aplicaron reglas explícitas, sin generación LLM.')
@@ -176,6 +183,7 @@ class RetentionAgent:
                     selections = None
                     state.llm_attempts.append({'agent':'retencion','attempt':attempt+1,'status':'failed','code':str(exc),'elapsed_ms':round((time.perf_counter()-attempt_start)*1000,2)})
                     state.send('llm','retencion','provider_call', {'attempt':attempt+1,'error':str(exc)},'retry' if attempt == 0 else 'error')
+                    log.warning('llm_failed agent=retencion attempt=%d code=%s elapsed_ms=%.0f', attempt+1, exc, (time.perf_counter()-attempt_start)*1000)
                     if attempt == 1 or any(x in str(exc) for x in ('HTTP_400','HTTP_401','HTTP_403','HTTP_404','HTTP_429')):
                         state.warnings.append(explain_error(str(exc)))
                         break
@@ -210,8 +218,9 @@ class SupervisorAgent:
                 return False
         return True
 
-    async def run(self, request, persist=True, demo=False):
+    async def run(self, request, persist=True, demo=False, listener=None):
         state = SharedState()
+        state._listener = listener
         start = time.perf_counter()
         async def workflow():
             state.send('usuario','supervisor','analysis_request', {'customer_count':len(request.customers),'requested_llm':request.use_llm,'demo':demo})
@@ -227,7 +236,10 @@ class SupervisorAgent:
             if not self.validate(state):
                 raise RuntimeError('SUPERVISOR_REJECTED')
             await review_stage('supervisor',request,state,self.retention.provider,self.store)
-            state.send('supervisor','usuario','validated_report',{'approved_for_human_review':True,'external_actions_executed':0})
+            flagged = [c['index'] for c in state.agent_llm['supervisor'].get('choices',[]) if c['action']=='request_review']
+            state.send('supervisor','usuario','validated_report',{'approved_for_human_review':True,'external_actions_executed':0,
+                'customers':len(state.predictions),'risk':{r:sum(p.risk==r for p in state.predictions) for r in ('ALTO','MEDIO','BAJO')},
+                'llm_recommendations':sum(r.source=='llm' for r in state.recommendations),'flagged_for_review':flagged})
             state.status = 'completed'
         try:
             await asyncio.wait_for(workflow(), timeout=60)

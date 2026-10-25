@@ -7,9 +7,9 @@ Ayudar a un equipo comercial a decidir qué cuentas revisar, qué evidencia resp
 ## Recorrido implementado
 
 1. **Inicio:** elegir demostración sintética o datos propios. Sin resultados todavía no se muestran paneles vacíos de métricas.
-2. **Datos y análisis:** CSV como opción principal (hasta 300 clientes), cliente individual como alternativa. Una configuración compartida de reglas/Gemini y consentimiento aplica a ambos métodos.
+2. **Datos y análisis:** CSV como opción principal (hasta 300 clientes), cliente individual como alternativa. Una configuración compartida de reglas/LLM (Groq) y consentimiento aplica a ambos métodos.
 3. **Diagnóstico:** lista de clientes, búsqueda, riesgo y prioridad. Distribuciones y comparaciones en una sección desplegable.
-4. **Agentes:** seleccionar cliente y agente para inspeccionar indicadores, sensibilidad, acción, fuente y supervisión. Los mensajes corresponden a la ejecución devuelta por el servidor; no se simula actividad en vivo.
+4. **Agentes:** seleccionar cliente y agente para inspeccionar indicadores, sensibilidad, acción, fuente y supervisión. Durante la ejecución, el estado de cada agente se actualiza con los mensajes que emite el servidor; al terminar se inspecciona la traza completa. No se simula actividad.
 5. **Decisiones:** buscar cliente, filtrar pendientes/aprobadas/rechazadas y registrar revisión humana cuando el análisis está autenticado. La aprobación no equivale a contactar ni retener al cliente.
 6. **Evaluación e historial:** evaluación del artefacto sintético e informes guardados, separados de la operación comercial.
 
@@ -18,7 +18,7 @@ Ayudar a un equipo comercial a decidir qué cuentas revisar, qué evidencia resp
 | Agente | Entrada | Resultado | Límite |
 |---|---|---|---|
 | Predictivo | Seis indicadores por cliente | Probabilidad, nivel, factores y advertencias | Modelo sintético sin horizonte empresarial validado |
-| Retención | Predicciones y catálogo de acciones admisibles | Selección de acción, evidencia y plan propuesto | Gemini opcional; reglas explícitas cuando no se utiliza o falla |
+| Retención | Predicciones y catálogo de acciones admisibles | Selección de acción, evidencia y plan propuesto | LLM (Groq) opcional; reglas explícitas cuando no se utiliza o falla |
 | Supervisor | Predicciones y recomendaciones | Consistencia, correcciones y traza | No valida efectividad comercial ni ejecuta acciones externas |
 | Persona responsable | Evidencia y contexto del cliente | Aprobar o rechazar | La ejecución y el resultado comercial aún se registran fuera del MVP |
 
