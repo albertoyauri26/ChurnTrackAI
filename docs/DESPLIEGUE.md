@@ -2,7 +2,7 @@
 
 ## Estado de publicación
 
-Aplicación: https://churntrackai-4omr.onrender.com. Repositorio: https://github.com/albertoyauri26/ChurnTrackAI. Salud: https://churntrackai-4omr.onrender.com/health. Servicio Render `srv-dbekqo0ae00c73dfnj20`: Free, Docker, región Oregon, rama `main`. Se creó el 24/10/2026 con la API de Render y sus variables equivalen a `render.yaml`; el commit `a9c9345` quedó live ese día (`evidence/deployment.json`). El despliegue original del equipo sigue en https://churntrackai.onrender.com (repositorio https://github.com/ManuelCarranzaAv/ChurnTrackAI). No se ha probado desde un segundo dispositivo físico.
+Aplicación: https://churntrackai-4omr.onrender.com. Repositorio: https://github.com/albertoyauri26/ChurnTrackAI. Salud: https://churntrackai-4omr.onrender.com/health. Servicio Render `srv-dbekqo0ae00c73dfnj20`: Free, Docker, región Oregon, rama `master` (rama predeterminada del repositorio). Se creó el 24/10/2026 con la API de Render y sus variables equivalen a `render.yaml`; el commit `79a964f` quedó live ese día (`evidence/deployment.json`). Se desplegó como `a9c9345`; el 26/10/2026 se reescribieron solo los mensajes de tres commits en la rama `master`, con idéntico contenido. El despliegue original del equipo sigue en https://churntrackai.onrender.com (repositorio https://github.com/ManuelCarranzaAv/ChurnTrackAI). No se ha probado desde un segundo dispositivo físico.
 
 ## Elección de plataforma
 
